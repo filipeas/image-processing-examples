@@ -38,6 +38,7 @@ da imagem apos o processo de esteganografia.
 ## Antes de executar
 - Tenha o python na versão 3.12.2
 - Tenha as seguintes libs em sua máquina:
+    - sys
     - numpy (pip install numpy)
     - opencv (pip install opencv-python)
     - matplotlib (pip install -U matplotlib)
