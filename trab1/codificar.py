@@ -122,7 +122,7 @@ def esteganografia_v1(img, binaryText, planoBits):
 	- Essa versao nao usa vetorizacao.
 	- Regra: salvar os binarios do texto sequencialmente por pixel, conforme percorre os canais.
 		- Ex: 
-			- Dado uma imagem 512x512x3, ou seja, uma imagem de 512x512px RGB.
+			- Dado uma imagem 512x512x3, ou seja, uma imagem de 512x512px com 3 canais RGB.
 			- Esse algoritmo vai:
 			- Pegar 1 pixel por vez e converter em binario, com sua representacao de 8 bits.
 			- Percorrer um loop em todos os planos de bits escolhidos. Por exemplo, se foi escolhido
@@ -131,8 +131,16 @@ def esteganografia_v1(img, binaryText, planoBits):
 			- Só depois de preencher todo o pixel que o algoritmo pula para o próximo pixel, refazendo
 			- o processo até o array de bits de texto acabar.
 			- Ao final, retorna a imagem esteganografada.
+	- OBS:
+		- Esse algoritmo adiciona no inicio da mensagem uma sequencia de 32 bits referentes ao tamanho da mensagem.
+		- Isso é necessário para que, na decodificacao, seja possivel saber onde parar de ler os pixels da imagem para
+		- obter a mensagem original.
 	'''
 	image = np.copy(img)
+
+	# Adicionando o comprimento da mensagem como os primeiros 32 bits da mensagem binária
+	binaryTextLength = len(binaryText)
+	binaryText = format(binaryTextLength, "032b") + binaryText
 	
 	for i in range(image.shape[0]):
 		for j in range(image.shape[1]):

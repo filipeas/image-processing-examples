@@ -1,4 +1,4 @@
-# Implementacao de um algoritmo de esteganografia em imagens digitais
+# Implementação de um algoritmo de esteganografia em imagens digitais
 
 - Neste trabalho, a esteganografia deve alterar os bits da mensagem a ser oculta 
 nos bits menos significativos de cada um dos tres canais de cor da imagem. 
@@ -36,11 +36,11 @@ da imagem apos o processo de esteganografia.
 - Resultados intermediarios podem ser tambem exibidos na tela. (histogramas, Kb da imagem de entrada antes da esteganografia, Kb do texto codificado, Kb da imagem após a esteganografia, print da imagem nos 3 canais nas faixas de bits 0, 1, 2 e 7).
 
 ## Antes de executar
+- Tenha o python na versão 3.12.2
 - Tenha as seguintes libs em sua máquina:
     - numpy (pip install numpy)
     - opencv (pip install opencv-python)
     - matplotlib (pip install -U matplotlib)
-- Tenha o python na versão 3.12.2 (opcional)
 
 ## Como executar
 - Para codificar a mensagem na imagem:

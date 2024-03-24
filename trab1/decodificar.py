@@ -46,6 +46,19 @@ def decodeText(binaryText):
 	return "".join(chr(int(c, 2)) for c in tmp.split(" "))
 
 def decodificar_esteganografia_v1(image, planoBits):
+	'''
+	- Versao da esteganografia com complexidade O(n^4).
+	- Essa versao nao usa vetorizacao.
+	- Como funciona:
+		- Faz o processo contrário da funcao esteganografia_v1() do arquivo codificar.py, ou seja,
+		- percorre pixel a pixel e, em cada pixel, percorre os planos_bits do pixel e coleta os
+		- bits na sequencia da leitura. Ao final, calcula os 32 bits iniciais referentes ao tamanho
+		- da mensagem e realiza um crop no array de bits lidos da mensagem até o comprimento referente
+		- aos 32 bits da mensagem.
+		- Ou seja, nos primeiros 32 bits da imagem, há o comprimento da mensagem ocultada. Após obter
+		- esse comprimento, basta percorrer os bits da imagem até completar os 32 bits e a mensagem ocultada
+		- será extraída com sucesso.
+	'''
 	binaryText = ""
 	# findDelimiter = False
 	lengthBits = "" # armazenar os 32 bits que representam o comprimento da msg
