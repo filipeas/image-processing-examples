@@ -18,6 +18,10 @@ def showFFTShift(fft_shift):
 
     return magnitude_spectrum_uint8
 
+def saveImage(name, img):
+	print("Salvando arquivo {}...".format(name))
+	cv2.imwrite(name, img)
+
 def etapa_1(filepath):
     # (i) abrir uma imagem de entrada convertida para escala de cinza.
     try:
@@ -108,6 +112,7 @@ def etapa_6(fft_shift_filtrado, title):
     return resultado_uint8
 
 def etapa_7(
+    title,
     gray_image,
     resultado_passa_baixa, 
     resultado_passa_alta, 
@@ -133,46 +138,55 @@ def etapa_7(
     plt.figure(figsize=(10, 8))
 
     plt.subplot(221), plt.imshow(resultado_passa_baixa, cmap='gray')
-    plt.title('Passa-Baixa'), plt.xticks([]), plt.yticks([])
+    plt.title('Passa-Baixa' + title), plt.xticks([]), plt.yticks([])
     plt.subplot(222), plt.plot(hist_passa_baixa, color='black')
-    plt.title('Histograma - Passa-Baixa'), plt.xlim([0, 256])
+    plt.title('Histograma - Passa-Baixa' + title), plt.xlim([0, 256])
     
     plt.subplot(223), plt.imshow(resultado_passa_alta, cmap='gray')
-    plt.title('Passa-Alta'), plt.xticks([]), plt.yticks([])
+    plt.title('Passa-Alta' + title), plt.xticks([]), plt.yticks([])
     plt.subplot(224), plt.plot(hist_passa_alta, color='black')
-    plt.title('Histograma - Passa-Alta'), plt.xlim([0, 256])
+    plt.title('Histograma - Passa-Alta' + title), plt.xlim([0, 256])
 
     plt.show()
     
     plt.figure(figsize=(10, 8))
     
     plt.subplot(221), plt.imshow(resultado_passa_faixa, cmap='gray')
-    plt.title('Passa-Faixa'), plt.xticks([]), plt.yticks([])
+    plt.title('Passa-Faixa' + title), plt.xticks([]), plt.yticks([])
     plt.subplot(222), plt.plot(hist_passa_faixa, color='black')
-    plt.title('Histograma - Passa-Faixa'), plt.xlim([0, 256])
+    plt.title('Histograma - Passa-Faixa' + title), plt.xlim([0, 256])
     
     plt.subplot(223), plt.imshow(resultado_rejeita_faixa, cmap='gray')
-    plt.title('Rejeita-Faixa'), plt.xticks([]), plt.yticks([])
+    plt.title('Rejeita-Faixa' + title), plt.xticks([]), plt.yticks([])
     plt.subplot(224), plt.plot(hist_rejeita_faixa, color='black')
-    plt.title('Histograma - Rejeita-Faixa'), plt.xlim([0, 256])
+    plt.title('Histograma - Rejeita-Faixa' + title), plt.xlim([0, 256])
     
     plt.show()
 
 def main(imagem_entrada, threshold):
     print("--- Análise do uso de FFT em imagens digitais ---")
     
-    # etapa 1
+    # etapa 1 (le a imagem e converte para tons de cinza)
     gray_image = etapa_1(imagem_entrada)
     showImage("Imagem Original (em tons de cinza)", gray_image)
+    # salvando imagens p/ relatorio
+    saveImage("imagem_original.png", gray_image)
 
     # etapa 2 e 3 (converter dominio espacial para fft)
     fft_shift = etapa_2(gray_image)
     magnitude_spectrum = showFFTShift(fft_shift)
+    # salvando imagens p/ relatorio
+    saveImage("imagem_FFT.png", gray_image)
     
-    # etapa 4
+    # etapa 4 (cria os filtros)
     passa_baixa, passa_alta, passa_faixa, rejeita_faixa = etapa_4(magnitude_spectrum)
+    # salvando imagens p/ relatorio
+    saveImage("filtro_passa_baixa.png", passa_baixa)
+    saveImage("filtro_passa_alta.png", passa_alta)
+    saveImage("filtro_passa_faixa.png", passa_faixa)
+    saveImage("filtro_rejeita_faixa.png", rejeita_faixa)
 
-    # etapa 5
+    # etapa 5 (aplica filtro na imagem)
     fft_shift_filtrado_passa_baixa = etapa_5(fft_shift, passa_baixa)
     fft_shift_filtrado_passa_alta = etapa_5(fft_shift, passa_alta)
     fft_shift_filtrado_passa_faixa = etapa_5(fft_shift, passa_faixa)
@@ -183,23 +197,32 @@ def main(imagem_entrada, threshold):
     resultado_filtrado_passa_alta = etapa_6(fft_shift_filtrado_passa_alta, "Passa-Alta")
     resultado_filtrado_passa_faixa = etapa_6(fft_shift_filtrado_passa_faixa, "Passa-Faixa")
     resultado_filtrado_rejeita_faixa = etapa_6(fft_shift_filtrado_rejeita_faixa, "Rejeita-Faixa")
+    # salvando imagens p/ relatorio
+    saveImage("filtro_passa_baixa_SEM_COMPRESSAO.png", resultado_filtrado_passa_baixa)
+    saveImage("filtro_passa_alta_SEM_COMPRESSAO.png", resultado_filtrado_passa_alta)
+    saveImage("filtro_passa_faixa_SEM_COMPRESSAO.png", resultado_filtrado_passa_faixa)
+    saveImage("filtro_rejeita_faixa_SEM_COMPRESSAO.png", resultado_filtrado_rejeita_faixa)
 
     # etapa 6 com aplicacao de compressao
     resultado_filtrado_passa_baixa_compress = etapa_6(compressao_por_remocao_de_coeficientes(fft_shift_filtrado_passa_baixa, threshold), "Passa-Baixa Com Compressao")
     resultado_filtrado_passa_alta_compress = etapa_6(compressao_por_remocao_de_coeficientes(fft_shift_filtrado_passa_alta, threshold), "Passa-Alta Com Compressao")
     resultado_filtrado_passa_faixa_compress = etapa_6(compressao_por_remocao_de_coeficientes(fft_shift_filtrado_passa_faixa, threshold), "Passa-Faixa Com Compressao")
     resultado_filtrado_rejeita_faixa_compress = etapa_6(compressao_por_remocao_de_coeficientes(fft_shift_filtrado_rejeita_faixa, threshold), "Rejeita-Faixa Com Compressao")
+    # salvando imagens p/ relatorio
+    saveImage("filtro_passa_baixa_COM_COMPRESSAO.png", resultado_filtrado_passa_baixa_compress)
+    saveImage("filtro_passa_alta_COM_COMPRESSAO.png", resultado_filtrado_passa_alta_compress)
+    saveImage("filtro_passa_faixa_COM_COMPRESSAO.png", resultado_filtrado_passa_faixa_compress)
+    saveImage("filtro_rejeita_faixa_COM_COMPRESSAO.png", resultado_filtrado_rejeita_faixa_compress)
 
     # etapa 7 (plotar histogramas)
-    etapa_7(gray_image, resultado_filtrado_passa_baixa, resultado_filtrado_passa_alta, resultado_filtrado_passa_faixa, resultado_filtrado_rejeita_faixa)
-    etapa_7(gray_image, resultado_filtrado_passa_baixa_compress, resultado_filtrado_passa_alta_compress, resultado_filtrado_passa_faixa_compress, resultado_filtrado_rejeita_faixa_compress)
+    etapa_7(" sem Compressão", gray_image, resultado_filtrado_passa_baixa, resultado_filtrado_passa_alta, resultado_filtrado_passa_faixa, resultado_filtrado_rejeita_faixa)
+    etapa_7(" com Compressão", gray_image, resultado_filtrado_passa_baixa_compress, resultado_filtrado_passa_alta_compress, resultado_filtrado_passa_faixa_compress, resultado_filtrado_rejeita_faixa_compress)
 
 if __name__ == '__main__':
-	if len(sys.argv) < 3:
-		print("Use: python fft.py <imagem_entrada.png> threshold")
-		sys.exit(1)
+    if len(sys.argv) < 3:
+        print("Use: python fft.py <imagem_entrada.png> threshold")
+        sys.exit(1)
+    imagem_entrada = sys.argv[1]
+    threshold = sys.argv[2]
     
-	imagem_entrada = sys.argv[1]
-	threshold = sys.argv[2]
-
-	main(imagem_entrada, threshold)
+    main(imagem_entrada, threshold)
