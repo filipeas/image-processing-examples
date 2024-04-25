@@ -176,7 +176,7 @@ def main(imagem_entrada, threshold):
     fft_shift = etapa_2(gray_image)
     magnitude_spectrum = showFFTShift(fft_shift)
     # salvando imagens p/ relatorio
-    saveImage("imagem_FFT.png", gray_image)
+    saveImage("imagem_FFT.png", magnitude_spectrum)
     
     # etapa 4 (cria os filtros)
     passa_baixa, passa_alta, passa_faixa, rejeita_faixa = etapa_4(magnitude_spectrum)
