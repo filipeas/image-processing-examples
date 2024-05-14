@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import pytesseract
 import sys
 import matplotlib.pyplot as plt
 
@@ -48,11 +49,21 @@ def plotHistogram(horizontal_projection, binary_image):
     plt.show()
 
 def giraImagem(img, angulo):
-    # Calcular o centro da imagem
-    center = (img.shape[1] // 2, img.shape[0] // 2)
+    h, w = img.shape[:2]
+    # calcular centro da imagem
+    center = (w // 2, h // 2)
     # Realizar a rotação da imagem
     rot_matrix = cv2.getRotationMatrix2D(center, angulo, 1.0)
-    rotated_image = cv2.warpAffine(img, rot_matrix, img.shape[1::-1], flags=cv2.INTER_LINEAR)
+    # extender imagem para preencher cantos pretos
+    cos = np.abs(rot_matrix[0, 0])
+    sin = np.abs(rot_matrix[0, 1])
+    new_w = int((h * sin) + (w * cos))
+    new_h = int((h * cos) + (w * sin))
+    # Ajustar a matriz de rotação para acomodar a extensão da imagem
+    rot_matrix[0, 2] += (new_w / 2) - center[0]
+    rot_matrix[1, 2] += (new_h / 2) - center[1]
+    # rotacionando imagem
+    rotated_image = cv2.warpAffine(img, rot_matrix, (new_w, new_h), borderValue=(255, 255, 255))
     return rotated_image
 
 def projecao_horizontal(img):
@@ -92,15 +103,88 @@ def projecao_horizontal(img):
     # possivel angulo de inclinacao da imagem
     return angles[np.argmax(valores)], giraImagem(img, angles[np.argmax(valores)])
 
+def moda(numeros):
+    moda = np.nan
+    contagem = 0
+    valores, contagens = np.unique(numeros, return_counts=True)
+    indice_max = np.argmax(contagens)
+    if contagens[indice_max] > 1:
+        moda = valores[indice_max]
+    return moda
+
+def transformada_hough(img):
+    # converte para tons de cinza
+    cinza = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # Suavizar a imagem para reduzir o ruído
+    suaviza_gauss = cv2.GaussianBlur(cinza, (5, 5), 0)
+
+    # Equalizar o histograma para melhorar o contraste
+    equalizado = cv2.equalizeHist(suaviza_gauss)
+
+    # Binarizar a imagem
+    _, binary_image = cv2.threshold(equalizado, 127, 255, cv2.THRESH_BINARY)
+
+    edges = cv2.Canny(binary_image, 50, 150, apertureSize=3) # usando canny
+    # showImage("edges", edges)
+
+    lines = cv2.HoughLines(edges, 1, np.pi/180, 130)
+
+    for line in lines:
+        rho, theta = line[0]
+        a = np.cos(theta)
+        b = np.sin(theta)
+        x0 = a * rho
+        y0 = b * rho
+        x1 = int(x0 + 1000 * (-b))
+        y1 = int(y0 + 1000 * (a))
+        x2 = int(x0 - 1000 * (-b))
+        y2 = int(y0 - 1000 * (a))
+        # cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2) # riscar linhas detectadas
+    
+    # Mostrar imagem com as linhas detectadas
+    # showImage("Hough Lines", img)
+    
+    if lines is not None:
+        angulos = []
+
+        for line in lines:
+            ro, theta = line[0]
+            angulo_grau = np.degrees(theta)
+            angulos.append(angulo_grau)
+        
+        # foi testato a média, máximo e a moda, porem nos testes com as imagens
+        # dadas, o melhor é calcular a moda para pegar a maior frequencia dos
+        # angulos
+        avg_angulo = moda(angulos)
+        
+        angulo = avg_angulo - 90
+
+    return angulo, giraImagem(img, angulo)
+
 def main(imagem_entrada, modo, imagem_saida):
-    print("--- Algoritmo de alinhamento ---")
+    print("\n--- Algoritmo de alinhamento ---")
 
     img = readImage(imagem_entrada)
     showImage("Imagem original", img)
 
-    angulo, imagem = projecao_horizontal(img)
+    # se 0 executar algoritmo de projecao horizontal
+    if modo == "0":
+        angulo, imagem = projecao_horizontal(img)
+    else: # se 1 executar algoritmo da transformada de hough
+        angulo, imagem = transformada_hough(img)
+    # printa resultados
     print("Angulo da imagem inclinada: ", angulo)
     showImage("Imagem Corrigida", imagem)
+    saveImage("Imagem_Corrigida.png", imagem)
+
+    # tesseract
+    # coloque nessa linha o path para o tesseract na sua máquina
+    # pytesseract.pytesseract.tesseract_cmd = r'<full_path_to_your_tesseract_executable>'
+    texto_original = pytesseract.image_to_string(img, lang='eng')
+    texto_corrigido = pytesseract.image_to_string(imagem, lang='eng')
+    print("Texto Original: ", texto_original)
+    print("Texto Corrigido: ", texto_corrigido)
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
