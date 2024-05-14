@@ -176,7 +176,7 @@ def main(imagem_entrada, modo, imagem_saida):
     # printa resultados
     print("Angulo da imagem inclinada: ", angulo)
     showImage("Imagem Corrigida", imagem)
-    saveImage("Imagem_Corrigida.png", imagem)
+    saveImage(imagem_saida, imagem)
 
     # tesseract
     # coloque nessa linha o path para o tesseract na sua máquina

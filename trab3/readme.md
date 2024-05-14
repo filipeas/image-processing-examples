@@ -27,7 +27,7 @@ A deteccao de inclinacao da imagem baseada na transformada de Hough assume que o
     - numpy (pip install numpy)
     - opencv (pip install opencv-python)
     - matplotlib (pip install -U matplotlib)
-    - Tesseract OCR
+    - Tesseract OCR (pip install pytesseract)
 
 ## Como executar
 - Para executar o programa faça:
