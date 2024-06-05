@@ -121,15 +121,18 @@ def lagrange(image, new_image, x, y):
     return pixel.astype(np.uint8)
 
 def escalarImagem(image, largura, altura, escala, interpolacao):
-    # altura = int(altura * escala)
-    # largura = int(largura * escala)
-
-    scaled_image = np.zeros((altura, largura, image.shape[2]), dtype=np.uint8)
-
     input_height, input_width = image.shape[:2]
 
-    escala_altura_ratio = input_height / altura
-    escala_largura_ratio = input_width / largura
+    if largura is not None and altura is not None:
+        scaled_image = np.zeros((altura, largura, image.shape[2]), dtype=np.uint8)
+        escala_altura_ratio = input_height / altura
+        escala_largura_ratio = input_width / largura
+    else:
+        altura = int(input_height * escala)
+        largura = int(input_width * escala)
+        scaled_image = np.zeros((altura, largura, image.shape[2]), dtype=np.uint8)
+        escala_altura_ratio = input_height / altura
+        escala_largura_ratio = input_width / largura
 
     for i in range(scaled_image.shape[0]):
         for j in range(scaled_image.shape[1]):
@@ -148,7 +151,7 @@ def escalarImagem(image, largura, altura, escala, interpolacao):
                 raise ValueError("Tipo de interpolacao desconhecido")
     return scaled_image
 
-def rotacionarImagem(image, largura, altura, angulo, interpolacao):
+def rotacionarImagem(image, angulo, interpolacao):
     input_height, input_width = image.shape[:2]
     center_x, center_y = input_width // 2, input_height // 2
 
@@ -188,7 +191,7 @@ def main(angulo, escala, largura, altura, interpolacao, imagem_entrada, imagem_s
     showImage("Imagem de entrada", image)
 
     if angulo:
-        result_image = rotacionarImagem(image, largura, altura, angulo * -1, interpolacao)
+        result_image = rotacionarImagem(image, angulo * -1, interpolacao)
     if escala:
         result_image = escalarImagem(image, largura, altura, escala, interpolacao)
     
@@ -202,7 +205,7 @@ if __name__ == '__main__':
     group.add_argument('-a', type=float, help='Ângulo de rotação')
     group.add_argument('-e', type=float, help='Fator de escala')
 
-    parser.add_argument('-d', nargs=2, type=int, metavar=('largura', 'altura'), required=True, help='Dimensões de largura e altura')
+    parser.add_argument('-d', nargs=2, type=int, metavar=('largura', 'altura'), help='Dimensões de largura e altura')
     parser.add_argument('-m', type=str, required=True, help='Método de interpolação (v - vizinho mais proximo | b - bilinear | bc - bicubica | l - lagrange)')
     parser.add_argument('-i', type=str, required=True, help='Caminho da imagem de entrada')
     parser.add_argument('-o', type=str, required=True, help='Caminho da imagem de saída')
@@ -214,15 +217,19 @@ if __name__ == '__main__':
         print(f"Ângulo de rotação: {args.a}")
     if args.e is not None:
         print(f"Fator de escala: {args.e}")
-    print(f"Dimensões: largura = {args.d[0]}, altura = {args.d[1]}")
+    if args.d is not None:
+        print(f"Dimensões: largura = {args.d[0]}, altura = {args.d[1]}")
     print(f"Método de interpolação: {args.m}")
     print(f"Imagem de entrada: {args.i}")
     print(f"Imagem de saída: {args.o}")
 
     angulo = args.a
     escala = args.e
-    largura = args.d[0]
-    altura = args.d[1]
+    largura = None
+    altura = None
+    if args.e is not None and args.d is not None:
+        largura = args.d[0]
+        altura = args.d[1]
     interpolacao = args.m
     imagem_entrada = args.i
     imagem_saida = args.o
