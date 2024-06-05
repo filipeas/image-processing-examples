@@ -50,8 +50,11 @@ python transf_geo.py
     - No passo (5), o calculo da matriz de homografia requer o uso de, no mınimo, 4 pontos de correspondencia.
 
 - Para executar o programa faça:
-``` python reg_img.py img_1.png img2.png imagem_saida.png  ```
+``` python regis_img.py -l -d -a -b -o  ```
     - Onde:
-        - img1.png: primeira imagem para correspodencia.
-        - img2.png: segunda imagem para corerspondencia.
-        - imagem_saida.png: nome + formato da imagem de saída.
+        - -l: limiar para usar no match dos descritores.
+        - -d: tipo do descritor (s - SIFT | b - BRIEF | o - ORB).
+        - -a: primeira imagem para registro.
+        - -b: segunda imagem para registro.
+        - -o: nome + formato da imagem de saída.
+    - Ex: ``` python regis_img.py -l 0.1 -d s -a imgs/foto5A.jpg -b imgs/foto5B.jpg -o imagem_saida.png ```
